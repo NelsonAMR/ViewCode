@@ -1,24 +1,39 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import "./style.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+const $ = (selector: string) => document.querySelector(selector);
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const $html = $("#html") as HTMLTextAreaElement;
+const $css = $("#css") as HTMLTextAreaElement;
+const $js = $("#js") as HTMLTextAreaElement;
+
+$html?.addEventListener("input", update);
+$css?.addEventListener("input", update);
+$js?.addEventListener("change", update);
+
+function update() {
+  const html = createHtml();
+  $("iframe")?.setAttribute("srcdoc", html);
+}
+
+function createHtml() {
+  const html = $html?.value;
+  const css = $css?.value;
+  const js = $js?.value;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>${css}</style>
+</head>
+<body>
+    ${html}
+    <script>${js}</script>
+</body>
+</html>
+`;
+}
