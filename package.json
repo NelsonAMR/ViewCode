@@ -13,6 +13,7 @@
     "vite": "^4.4.0"
   },
   "dependencies": {
+    "js-base64": "^3.7.5",
     "split-grid": "^1.0.11"
   }
 }

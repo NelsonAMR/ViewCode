@@ -1,5 +1,7 @@
-import "./style.css";
 import Split from "split-grid";
+import { encode, decode } from "js-base64";
+
+import "./style.css";
 
 const $ = (selector: string) => document.querySelector(selector);
 
@@ -32,9 +34,9 @@ function init() {
   const { pathname } = window.location;
   const [rawHtml, rawCss, rawJs] = pathname.slice(1).split("%7C");
 
-  const html = window.atob(rawHtml);
-  const css = window.atob(rawCss);
-  const js = window.atob(rawJs);
+  const html = decode(rawHtml);
+  const css = decode(rawCss);
+  const js = decode(rawJs);
 
   $html.value = html;
   $css.value = css;
@@ -49,9 +51,7 @@ function update() {
   const css = $css?.value;
   const js = $js?.value;
 
-  const hashedCode = `${window.btoa(html)}|${window.btoa(css)}|${window.btoa(
-    js
-  )}`;
+  const hashedCode = `${encode(html)}|${encode(css)}|${encode(js)}`;
 
   window.history.replaceState(null, "", `/${hashedCode}`);
 
