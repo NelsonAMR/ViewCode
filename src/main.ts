@@ -1,8 +1,6 @@
 import Split from "split-grid";
 import { encode, decode } from "js-base64";
 
-import "./style.css";
-
 const $ = (selector: string) => document.querySelector(selector);
 
 const $html = $("#html") as HTMLTextAreaElement;
@@ -34,9 +32,9 @@ function init() {
   const { pathname } = window.location;
   const [rawHtml, rawCss, rawJs] = pathname.slice(1).split("%7C");
 
-  const html = decode(rawHtml);
-  const css = decode(rawCss);
-  const js = decode(rawJs);
+  const html = rawHtml ? decode(rawHtml) : "";
+  const css = rawCss ? decode(rawCss) : "";
+  const js = rawJs ? decode(rawJs) : "";
 
   $html.value = html;
   $css.value = css;
@@ -51,11 +49,11 @@ function update() {
   const css = $css?.value;
   const js = $js?.value;
 
-  const hashedCode = `${encode(html)}|${encode(css)}|${encode(js)}`;
+  const hashedCode = `${encode(html)}${css && "|"}${encode(css)}${
+    js && "|"
+  }${encode(js)}`;
 
-  if (hashedCode) {
-    window.history.replaceState(null, "", `/${hashedCode}`);
-  }
+  window.history.pushState(null, "", `/${hashedCode}`);
 
   const doc = createHtml(html, css, js);
   $("iframe")?.setAttribute("srcdoc", doc);
