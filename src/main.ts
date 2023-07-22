@@ -53,7 +53,9 @@ function update() {
 
   const hashedCode = `${encode(html)}|${encode(css)}|${encode(js)}`;
 
-  window.history?.replaceState(null, "", `/${hashedCode}`);
+  if (hashedCode) {
+    window.history.replaceState(null, "", `/${hashedCode}`);
+  }
 
   const doc = createHtml(html, css, js);
   $("iframe")?.setAttribute("srcdoc", doc);
