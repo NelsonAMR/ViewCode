@@ -1,17 +1,30 @@
+import * as monaco from "monaco-editor";
+import HtmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
+import CssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
+import JsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 import Split from "split-grid";
 import { encode, decode } from "js-base64";
 
 const $ = (selector: string) => document.querySelector(selector);
 
-const $html = $("#html") as HTMLTextAreaElement;
-const $css = $("#css") as HTMLTextAreaElement;
-const $js = $("#js") as HTMLTextAreaElement;
+const $html = $("#html") as HTMLDivElement;
+const $css = $("#css") as HTMLDivElement;
+const $js = $("#js") as HTMLDivElement;
 
-document.addEventListener("DOMContentLoaded", init);
-
-$html?.addEventListener("input", update);
-$css?.addEventListener("input", update);
-$js?.addEventListener("change", update);
+window.MonacoEnvironment = {
+  getWorker(_: string, label: string) {
+    switch (label) {
+      case "html":
+        return new HtmlWorker();
+      case "css":
+        return new CssWorker();
+      case "javascript":
+        return new JsWorker();
+      default:
+        return new HtmlWorker();
+    }
+  },
+};
 
 Split({
   columnGutters: [
@@ -28,26 +41,54 @@ Split({
   ],
 });
 
-function init() {
-  const { pathname } = window.location;
-  const [rawHtml, rawCss, rawJs] = pathname.slice(1).split("%7C");
+const { pathname } = window.location;
+const [rawHtml, rawCss, rawJs] = pathname.slice(1).split("%7C");
 
-  const html = rawHtml ? decode(rawHtml) : "";
-  const css = rawCss ? decode(rawCss) : "";
-  const js = rawJs ? decode(rawJs) : "";
+const html = rawHtml ? decode(rawHtml) : "";
+const css = rawCss ? decode(rawCss) : "";
+const js = rawJs ? decode(rawJs) : "";
 
-  $html.value = html;
-  $css.value = css;
-  $js.value = js;
+const commonEditorOptions = {
+  fontSize: 16,
+  theme: "vs-dark",
+  minimap: {
+    enabled: false,
+  },
+  automaticLayout: true,
+};
 
-  const docPrev = createHtml(html, css, js);
-  $("iframe")?.setAttribute("srcdoc", docPrev);
-}
+const htmlEditor = monaco.editor.create($html, {
+  value: html,
+  language: "html",
+  ...commonEditorOptions,
+  wordWrap: "on",
+});
+
+const cssEditor = monaco.editor.create($css, {
+  value: css,
+  language: "css",
+  ...commonEditorOptions,
+  wordWrap: "on",
+});
+
+const jsEditor = monaco.editor.create($js, {
+  value: js,
+  language: "javascript",
+  ...commonEditorOptions,
+  wordWrap: "on",
+});
+
+htmlEditor.onDidChangeModelContent(update);
+cssEditor.onDidChangeModelContent(update);
+jsEditor.onDidBlurEditorText(update);
+
+const docPrev = createHtml(html, css, js);
+$("iframe")?.setAttribute("srcdoc", docPrev);
 
 function update() {
-  const html = $html?.value;
-  const css = $css?.value;
-  const js = $js?.value;
+  const html = htmlEditor.getValue();
+  const css = cssEditor.getValue();
+  const js = jsEditor.getValue();
 
   const hashedCode = `${encode(html)}${css && "|"}${encode(css)}${
     js && "|"
